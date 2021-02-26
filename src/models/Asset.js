@@ -10,8 +10,10 @@ module.exports = db.defineModel('assets', {
 	model: db.STRING(50),
 	buy_time: db.DATEONLY,
 	use_time: db.DATEONLY,
+	scrap_year: db.INTEGER,
+	price: db.FLOAT,
 	status: db.STRING(20),
-	department: db.STRING(50),
+	// department: db.STRING(50),
 	position: db.STRING(50),
 	manager: db.STRING(20),
 })

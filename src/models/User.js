@@ -7,7 +7,8 @@ module.exports = db.defineModel('users', {
     }, 
     name: db.STRING(50),
     role_id: db.STRING(50),
-    department: db.STRING(50),
+    phone: db.STRING(15),
+    // department: db.STRING(50),
     status: db.BOOLEAN,
     create_time: db.DATEONLY
 })

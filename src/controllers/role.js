@@ -1,13 +1,7 @@
 const model = require('../model')
 const errors = require('../dicts/errors')
-const dayjs = require('dayjs')
-// const {formatTime} = require('../utils/index')
 let Asset = model.Asset
 let User = model.User
-let Department = model.Department
-
-Department.hasMany(User)
-User.belongsTo(Department)
 const tokens = {
   admin: {
     token: 'admin-token'
@@ -22,7 +16,7 @@ const users = {
     roles: ['admin'],
     introduction: 'I am a super administrator',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-    name: '超级管理员'
+    name: 'Super Admin'
   },
   'editor-token': {
     roles: ['editor'],
@@ -37,22 +31,15 @@ const fn_login = async (ctx, next) => {
     const token = tokens[username]
     let r = {}
     if (!token) {
-        r = errors.passwdIncrrect
+        r = {
+            code: 60204,
+            message: 'Account and password are incorrect.'
+        }
     } else {
         r = {
             code: 20000,
             data: token
         }
-    }
-    // 设置Content-Type:
-    ctx.response.type = 'application/json'
-    ctx.response.body = r
-}
-
-const fn_logout = async (ctx, next) => {
-    r = {
-        code: 20000,
-        data: 'success'
     }
     // 设置Content-Type:
     ctx.response.type = 'application/json'
@@ -80,13 +67,9 @@ const fn_userinfo = async (ctx, next) => {
 }
 
 const fn_getUserlist = async (ctx, next) => {
-    const req = ctx.query
-    console.log('req:',req)
     let users = null
     let r = {}
     users = await User.findAll({
-        include: Department,
-        where: req,
         order: [
             ['code', 'ASC']
         ]})
@@ -111,15 +94,14 @@ const fn_getTest = async (ctx, next) => {
     ctx.response.body = {'类型是：':result}
 }
 
-//添加用户
-const fn_addUser = async (ctx, next) => {
+//添加资产
+const fn_addAsset = async (ctx, next) => {
     const postInfo = ctx.request.body
-    postInfo.create_time = dayjs().format('YYYY-MM-DD')
-    console.log(postInfo)
+    console.log("postInfo:",postInfo)
     let r = {}
     try {
-        let user= await User.create(postInfo)
-        console.log("user:",user.dataValues)
+        let asset= await Asset.create(postInfo)
+        console.log("asset:",asset.dataValues)
         r = {
             message: '添加成功！',
             code: 20000
@@ -132,14 +114,25 @@ const fn_addUser = async (ctx, next) => {
     ctx.response.body = r
 }
 //编辑资产
-const fn_updateUser = async (ctx, next) => {
+const fn_updateAsset = async (ctx, next) => {
     const postInfo = ctx.request.body
     let r = {}
-    let user = await User.findByPk(postInfo.id)
-    if(user){
+    let asset = await Asset.findByPk(postInfo.id)
+    if(asset){
         try {
-            Object.assign(user,postInfo)
-            await user.save()
+            // asset.code =  postInfo.code
+            // asset.name =  postInfo.name
+            // asset.mfrs =  postInfo.mfrs
+            // asset.model =  postInfo.model
+            // asset.buy_time =  postInfo.buy_time
+            // asset.use_time =  postInfo.use_time
+            // asset.status=  postInfo.status
+            // asset.department=  postInfo.department
+            // asset.position=  postInfo.position
+            // asset.manager=  postInfo.manager
+            // 用Object.assign把postInfo对象里的属性快速赋值到asset里。
+            Object.assign(asset,postInfo)
+            await asset.save()
             r = {
                 message: '更新数据成功！',
                 code: 20000
@@ -154,21 +147,25 @@ const fn_updateUser = async (ctx, next) => {
     ctx.response.body = r
 }
 
-//删除用户
-const fn_deleteUser = async (ctx, next) => {
+//删除资产
+const fn_deleteAsset = async (ctx, next) => {
     const req = ctx.request.body
     console.log('id：',req.id)
     let r = {}
-    try {
-        let res = await User.destroy({
-            where: { id: req.id }
-        })
-        r = {
-            message: `成功删除 ${res} 条数据！`,
-            code: 20000,
+    asset = await Asset.findByPk(req.id)
+    if(asset){
+        try {
+            await asset.destroy()
+            r = {
+                message: '删除数据成功！',
+                code: 20000
+            }
+        } catch(err){
+            console.log("err_start:\nerr_name:",err.name,"\nerr_message:",err.message,"\nerr_end")
+            r = errors.delete
         }
-    } catch(err) {
-        r = errors.delete
+    } else {
+        r = errors.noData
     }
     ctx.response.type = 'application/json'
     ctx.response.body = r
@@ -195,14 +192,10 @@ const fn_signin = async (ctx, next) => {
 };
 
 module.exports = {
-    'POST /signin': fn_signin,
-    'POST /user/login': fn_login,
-    'POST /user/logout': fn_logout,
-    'POST /user/add': fn_addUser,
-    'POST /user/update': fn_updateUser,
-    'POST /user/delete': fn_deleteUser,
-    'GET /user/info': fn_userinfo,
-    'GET /user/userlist': fn_getUserlist,
+    // 'POST /signin': fn_signin,
+    // 'POST /user/login': fn_login,
+    // 'GET /user/info': fn_userinfo,
+    // 'GET /user/userlist': fn_getUserlist,
 };
 
 //http://123.207.32.32:8000

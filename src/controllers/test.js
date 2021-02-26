@@ -3,6 +3,26 @@ const errors = require('../dicts/errors')
 const Mock = require('mockjs')
 let Asset = model.Asset
 let User = model.User
+let Department = model.Department
+
+
+let departmentList = (async () =>{
+    const departments = await Department.findAll({
+    attributes: ['id'],
+	  where: {
+	    isentity: true
+	  }
+	})
+	return departments.map(item => item.id)
+})()
+
+
+Mock.Random.extend({    
+	phone: function () {    
+    let phonePrefixs = '18080565' // 自己写前缀哈
+    return phonePrefixs + Mock.mock(/\d{3}/) //Number()
+  }
+})
 
 const makeModel = () =>{
   let str = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
@@ -13,15 +33,19 @@ const makeModel = () =>{
   return model
 }
 
+
 let data = Mock.mock({
 	'items|30': [{
 	    'code|+1': 20200001,
 	    'name|1': ['服务器','交换机','显示器','球机','枪机','硬盘录像机','PC','打印机','一体机','投影仪'],
 	    'mfrs|1': ['联想', '华为', '海康','惠普','三星','戴尔','松下','索尼'],
 	    'status|1': ['正常', '损坏', '维修','报废','丢失'],
-	    'department|1': ['办公室', '政治处', '财务科','管理科','生产科'],
+	    'departmentId|1': Mock.Random.pick(departmentList),
+	    // 'department|1': ['办公室', '政治处', '财务科','管理科','生产科'],
 	    position:'@city',
 	    model:makeModel,
+	    scrap_year:'@integer(3,15)',
+	    price:'@float(1000,100000)',
 	    manager: '@cname',
 	    buy_time: '@date',
 	    use_time: '@date',
@@ -29,12 +53,13 @@ let data = Mock.mock({
 })
 
 let userData = Mock.mock({
-	'items|300': [{
+	'items|30': [{
 	    'code|+1': 5159000,
 	    name: '@cname',
 	    'role_id|+1': 10000,
+	    phone: '@phone',
 	    'status|1': '@boolean()',
-	    'department|1': ['办公室', '政治处', '财务科','管理科','生产科'],
+	    'departmentId|1': departmentList,
 	    create_time: '@date',
     }]
 })
@@ -64,8 +89,9 @@ const fakeData = async (ctx, next) => {
 	let postInfo = data.items
 	let userInfo = userData.items
     let r = {}
+    console.log(userData.items)
     try {
-        // postInfo.forEach(async (item) => { await Asset.create(item)} )
+        postInfo.forEach(async (item) => { await Asset.create(item)} )
         userInfo.forEach(async (item) => { await User.create(item)} )
         r = {
             message: '添加成功！',

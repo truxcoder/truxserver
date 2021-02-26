@@ -5,6 +5,7 @@ const config = require('./config/config')
 const sequelize = new Sequelize(config.database, config.username, config.password, {
     host: config.host,
     dialect: config.dialect,
+    logging: false,
     pool: {
         max: 5,
         min: 0,
@@ -69,7 +70,7 @@ function defineModel(name,attributes) {
 	})
 }
 
-const TYPES = ['STRING', 'INTEGER', 'BIGINT', 'TEXT', 'DOUBLE', 'DATEONLY', 'BOOLEAN', 'DATE', 'DATEONLY']
+const TYPES = ['STRING', 'INTEGER', 'FLOAT', 'BIGINT', 'TEXT', 'DOUBLE', 'DATEONLY', 'BOOLEAN', 'DATE', 'DATEONLY']
 
 let exp = {
     defineModel: defineModel,
